@@ -1,0 +1,7 @@
+base
+slidify
+knitr
+MASS
+data.table
+reshape2
+ggplot2

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title></title>
+  <title>Gaussian Processes</title>
   <meta charset="utf-8">
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Gaussian Processes">
+  <meta name="author" content="Bartek Skorulski">
   <meta name="generator" content="slidify" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -32,9 +32,9 @@
     <!-- LOGO SLIDE -->
         <slide class="title-slide segue nobackground">
   <hgroup class="auto-fadein">
-    <h1></h1>
+    <h1>Gaussian Processes</h1>
     <h2></h2>
-    <p><br/></p>
+    <p>Bartek Skorulski<br/></p>
   </hgroup>
   <article></article>  
 </slide>
@@ -42,15 +42,30 @@
 
     <!-- SLIDES -->
     <slide class="" id="slide-1" style="background:;">
-  <hgroup>
-    <h2>Read-And-Delete</h2>
-  </hgroup>
   <article data-timings="">
-    <ol>
-<li>Edit YAML front matter</li>
-<li>Write using R Markdown</li>
-<li>Use an empty line followed by three dashes to separate slides!</li>
-</ol>
+    <pre><code>## Loading required package: knitr
+## Loading required package: MASS
+## Loading required package: data.table
+## data.table 1.9.4  For help type: ?data.table
+## *** NB: by=.EACHI is now explicit. See README to restore previous behaviour.
+## Loading required package: reshape2
+## Loading required package: ggplot2
+</code></pre>
+
+<h2>Definitions</h2>
+
+<p><em>Gaussian process</em> is a stochastic process where any finite number of
+random variables have a joint Gaussian distribution.</p>
+
+<p>A Gaussian process is completely specified by its <em>mean function</em>
+\(m(x)\) and <em>covariance function</em>\(k(x,x')\). They are defined by</p>
+
+<p>\[m(x) = \mathcal{E}[f(x)],\]</p>
+
+<p>\[ k(x,x') = E\big[\big(f(x) − m(x))(f(x') − m(x')\big)\big],\]</p>
+
+<p>and will write the Gaussian process as \( f(x) \sim GP(m(x), k(x,
+x'))\).</p>
 
   </article>
   <!-- Presenter Notes -->
@@ -58,10 +73,42 @@
 
 <slide class="class" id="id" style="background:;">
   <hgroup>
-    <h2>Slide 2</h2>
+    <h2>Squared exponential</h2>
   </hgroup>
   <article data-timings="">
-    
+    <p>\[ cov(f(x_p), f (x_q)) = k(x_p , x_q) =
+    \exp\Big(−\frac{1}{2} |x_p − x_q |\Big)^2.\]</p>
+
+<p><img src="assets/fig/unnamed-chunk-1-1.png" alt="plot of chunk unnamed-chunk-1"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Brownian Motion</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>\[ cov(f(x_p), f (x_q)) = k(x_p , x_q) = \min(x_p, x_q).\]</p>
+
+<p><img src="assets/fig/unnamed-chunk-2-1.png" alt="plot of chunk unnamed-chunk-2"> <img src="assets/fig/unnamed-chunk-2-2.png" alt="plot of chunk unnamed-chunk-2"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Predictions</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>\[\overline{y}^* = K^*(\lambda^2\cdot I+K)^{-1}\cdot y \]</p>
+
+<p>\[C = K^{**}-K^*\cdot(\lambda^2\cdot I+K)^{-1}\cdot(K^*)^t \]</p>
+
+<p><img src="assets/fig/unnamed-chunk-3-1.png" alt="plot of chunk unnamed-chunk-3"> </p>
+
   </article>
   <!-- Presenter Notes -->
 </slide>
@@ -72,14 +119,26 @@
     <ul>
       <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=1 title='Read-And-Delete'>
+        data-slide=1 title='NA'>
          1
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=2 title='Slide 2'>
+        data-slide=2 title='Squared exponential'>
          2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Brownian Motion'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Predictions'>
+         4
       </a>
     </li>
   </ul>
@@ -92,7 +151,21 @@
 </body>
   <!-- Load Javascripts for Widgets -->
   
-  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
   <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   <!-- DONE LOADING HIGHLIGHTER JS FILES -->

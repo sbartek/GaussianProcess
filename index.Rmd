@@ -1,26 +1,167 @@
 ---
-title       : 
-subtitle    : 
-author      : 
-job         : 
+title       : Gaussian Processes
+author      : Bartek Skorulski
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      # 
-widgets     : []            # {mathjax, quiz, bootstrap}
+widgets     : [mathjax]            # {mathjax, quiz, bootstrap}
 mode        : selfcontained # {standalone, draft}
 knit        : slidify::knit2slides
 ---
 
-## Read-And-Delete
 
-1. Edit YAML front matter
-2. Write using R Markdown
-3. Use an empty line followed by three dashes to separate slides!
+```{r libraries, echo=FALSE, messages=FALSE}
+require(knitr)
+require(MASS)
+
+require(data.table)
+require(reshape2)
+
+require(ggplot2)
+```
+
+
+## Definitions
+
+_Gaussian process_ is a stochastic process where any finite number of
+random variables have a joint Gaussian distribution.
+
+A Gaussian process is completely specified by its _mean function_
+$m(x)$ and _covariance function_\(k(x,x')\). They are defined by
+
+\[m(x) = \mathcal{E}[f(x)],\]
+
+\[ k(x,x') = E\big[\big(f(x) − m(x))(f(x') − m(x')\big)\big],\]
+
+and will write the Gaussian process as \( f(x) \sim GP(m(x), k(x,
+x'))\).
+
 
 --- .class #id 
 
-## Slide 2
+## Squared exponential
+
+\[ cov(f(x_p), f (x_q)) = k(x_p , x_q) =
+    \exp\Big(−\frac{1}{2} |x_p − x_q |\Big)^2.\]
 
 
+```{r SigmaDef, echo=FALSE, messages=FALSE}
+
+squared.exp <- function(x,y,l=1) {
+  exp(-0.5* (norm(x-y, type="2")/l)^2)
+}
+
+Sigma <- function(x1, x2, cov.fun=squared.exp) {
+  n1 <- length(x1)
+  n2 <- length(x2)
+  S <- matrix(rep(0, n1*n2), nrow=n1)
+  for (i in 1:n1) {
+    for (j in 1:n2) {
+      S[i,j] <- cov.fun(x1[i],x2[j]) }}
+  S
+}
+
+melted.simulations <- function(x.star, sim.number, ms, S) {
+  sims <- cbind(data.table(x=x.star), t(mvrnorm(sim.number, ms, S)))
+  melt(sims, id=1)
+}
+
+gg.simulations <- function(melted.sims) {
+  ggplot() +
+      geom_line(data = melted.sims, aes(x=x,y=value,
+                    group=factor(variable)), alpha=.6) +
+          theme_bw()
+
+}
 
 
+```
+
+```{r ,echo=FALSE }
+x.star <- seq(-5,5,0.1)
+sim.number <- 5
+S <- Sigma(x.star,x.star)
+msims <- melted.simulations(x.star, sim.number,
+                            rep(0, length(x.star)), S)
+gg.simulations(msims)
+```
+
+---
+
+
+## Brownian Motion
+
+\[ cov(f(x_p), f (x_q)) = k(x_p , x_q) = \min(x_p, x_q).\]
+
+
+```{r, echo=FALSE}
+brow <- function(x1,x2) {
+  min(x1,x2)
+}
+
+x.star <- seq(0, 5, 0.005)
+S <- Sigma(x.star, x.star, brow)
+ms <- rep(0, length(x.star))
+msims <- melted.simulations(x.star, sim.number, ms, S)
+gg.simulations(msims)
+
+bm <- data.table(t(mvrnorm(2, rep(0, length(x.star)), S)))
+ggplot(bm, aes(V1,V2))+
+    geom_path() + theme_bw()
+```
+
+---
+
+## Predictions
+
+\[\overline{y}^* = K^*(\lambda^2\cdot I+K)^{-1}\cdot y \]
+
+\[C = K^{**}-K^*\cdot(\lambda^2\cdot I+K)^{-1}\cdot(K^*)^t \]
+
+```{r, echo=FALSE}
+
+y.predict <- function(x, y, x.star, cov.fun, sigma=0) {
+  K <- Sigma(x,x)
+  I <- diag(length(x))
+  K.star <- Sigma(x.star, x)
+  K.star %*% solve(K+sigma^2*I) %*% y
+}
+
+cov.predict <- function(x, y, x.star, cov.fun, sigma=0) {
+  K <- Sigma(x,x)
+  I <- diag(length(x))
+  K.star <- Sigma(x.star, x)
+  K.star.star <- Sigma(x.star, x.star)
+  K.star.star - K.star %*% solve(K+sigma^2*I) %*% t(K.star)
+}
+
+gg.simulations2 <- function(x, y, x.star, cov.fun, sim.number, sigma=0) {
+  observations <- data.table(x, y)
+  y.star.bar <- y.predict(x, y, x.star, cov.fun, sigma)[,1]
+  predictors <- data.table(x=x.star, y=y.star.bar)
+  S <- cov.predict(x, y, x.star, cov.fun, sigma)
+  ms <- y.star.bar
+  msims <- melted.simulations(x.star, sim.number, ms, S)
+  d <- abs(diag(S))
+  predictors$sigma <- sqrt(d)
+  
+  ggplot() +
+      geom_line(data = msims, aes(x=x, y=value,
+                    group=factor(variable)), alpha=.3, colour="green") +
+          geom_point(data=observations,
+                     aes(x,y), size=3, colour="red")+
+              geom_line(data=predictors, aes(x, y), colour='blue') +
+                  geom_ribbon(data=predictors,
+                              aes(x, ymax=y+2*sigma,
+                                  ymin=y-2*sigma), alpha=0.1)+
+                      theme_bw()
+}    
+
+x <- c(-4,-3,-1,0,2)
+y <- c(-2,0, 1, 2, -1)
+x.star <- seq(-5,5,0.1)
+sim.number <- 20
+cov.fun <- squared.exp;
+
+gg.simulations2(x, y, x.star, cov.fun, sim.number)
+```
