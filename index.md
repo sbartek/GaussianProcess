@@ -11,15 +11,6 @@ knit        : slidify::knit2slides
 
 
 
-```
-## Loading required package: knitr
-## Loading required package: MASS
-## Loading required package: data.table
-## data.table 1.9.4  For help type: ?data.table
-## *** NB: by=.EACHI is now explicit. See README to restore previous behaviour.
-## Loading required package: reshape2
-## Loading required package: ggplot2
-```
 
 
 ## Definitions

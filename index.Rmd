@@ -10,7 +10,7 @@ knit        : slidify::knit2slides
 ---
 
 
-```{r libraries, echo=FALSE, messages=FALSE}
+```{r libraries, echo=FALSE, messages=FALSE, results='hide'}
 require(knitr)
 require(MASS)
 
